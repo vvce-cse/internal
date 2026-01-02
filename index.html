@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Faculty Portal - CSE Dept</title>
+    <title>Admin Portal - Exam Duty Allocation</title>
     <style>
         :root {
             --primary: #1a252f;
             --secondary: #2c3e50;
             --accent: #3498db;
             --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --purple: #9b59b6;
             --light: #f4f6f9;
             --white: #ffffff;
             --shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -29,7 +32,7 @@
             padding: 15px 20px;
             box-shadow: var(--shadow);
             border-bottom: 3px solid var(--accent);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .header-content {
@@ -42,7 +45,7 @@
         }
 
         .logo {
-            height: 80px; /* Adjust based on your image aspect ratio */
+            height: 70px;
             width: auto;
             object-fit: contain;
         }
@@ -55,7 +58,7 @@
         .header-title h1 {
             margin: 0;
             color: var(--secondary);
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 700;
@@ -66,6 +69,10 @@
             font-size: 1rem;
             color: #7f8c8d;
             font-weight: 500;
+            background: #eee;
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
         }
 
         /* --- CONTAINER --- */
@@ -85,7 +92,7 @@
         }
 
         .nav-btn {
-            padding: 12px 25px;
+            padding: 10px 20px;
             border: none;
             background: var(--white);
             cursor: pointer;
@@ -94,7 +101,7 @@
             border-radius: 30px;
             transition: all 0.3s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .nav-btn:hover {
@@ -104,9 +111,9 @@
         }
 
         .nav-btn.active {
-            background-color: var(--accent);
+            background-color: var(--secondary);
             color: var(--white);
-            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 4px 10px rgba(44, 62, 80, 0.4);
         }
 
         /* --- SECTIONS --- */
@@ -117,6 +124,7 @@
             border-radius: 10px;
             box-shadow: var(--shadow);
             animation: fadeIn 0.4s ease;
+            margin-bottom: 30px;
         }
         .page-section.active-section { display: block; }
 
@@ -131,7 +139,12 @@
             padding-bottom: 15px;
             margin-top: 0;
             font-size: 1.4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+
+        h3 { color: var(--accent); margin-top: 20px; font-size: 1.1em; }
 
         /* --- TABLE STYLES --- */
         .table-wrapper {
@@ -139,53 +152,49 @@
             border-radius: 6px;
             border: 1px solid #e0e0e0;
             margin-top: 15px;
+            max-height: 70vh;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             min-width: 600px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         th {
             background-color: var(--secondary);
             color: var(--white);
-            padding: 15px;
+            padding: 12px;
             text-align: left;
             position: sticky;
             top: 0;
             z-index: 10;
+            border: 1px solid #34495e;
         }
 
         td {
             border: 1px solid #e0e0e0;
-            padding: 12px;
+            padding: 10px;
             vertical-align: middle;
             color: #555;
         }
-
-        tr:nth-child(even) { background-color: #fafafa; }
-        tr:hover { background-color: #f1f8ff; }
 
         /* Cell Status Colors */
         .status-cell {
             text-align: center;
             font-weight: 700;
             font-size: 13px;
-            cursor: default;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.1s;
         }
-        .status-assigned {
-            background-color: var(--success);
-            color: white;
-            border-radius: 4px;
-        }
-        .status-empty {
-            background-color: transparent;
-            color: transparent;
-        }
+        .status-cell:hover { opacity: 0.8; }
+        .status-assigned { background-color: var(--success); color: white; border-radius: 4px; }
+        .status-empty { background-color: transparent; color: transparent; }
+        .unsaved-change { box-shadow: inset 0 0 0 3px var(--warning) !important; }
 
-        /* --- FORMS --- */
+        /* --- CONTROLS & FORMS --- */
         .control-panel {
             background: #f8f9fa;
             padding: 20px;
@@ -194,38 +203,74 @@
             margin-bottom: 20px;
         }
 
-        select {
-            padding: 12px;
+        .admin-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f1f8ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        select, input[type="text"], input[type="date"] {
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
             width: 100%;
-            max-width: 300px;
-            font-size: 1rem;
+            max-width: 250px;
+            font-size: 0.95rem;
             outline: none;
-            transition: border 0.3s;
+            margin-right: 10px;
         }
-        select:focus { border-color: var(--accent); }
+        
+        textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; height: 80px; font-family: inherit; }
 
         button.btn {
-            padding: 12px 25px;
+            padding: 10px 20px;
             background-color: var(--accent);
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 1rem;
-            transition: background 0.3s;
-            margin-top: 10px;
+            transition: background 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        button.btn:hover { background-color: #2980b9; }
+        button.btn:hover { background-color: #2980b9; transform: translateY(-1px); }
+        button.btn-success { background-color: var(--success); }
+        button.btn-danger { background-color: var(--danger); }
+        button.btn-purple { background-color: var(--purple); }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .toggle-switch input { display: none; }
+        .slider {
+            width: 40px; height: 20px; background: #ccc;
+            border-radius: 20px; position: relative; transition: 0.3s; margin-right: 10px;
+        }
+        .slider:before {
+            content: ""; position: absolute; width: 16px; height: 16px;
+            background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s;
+        }
+        input:checked + .slider { background: var(--purple); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .toggle-text { font-weight: 600; color: var(--secondary); font-size: 0.9rem; }
 
         /* Swap Cards */
         .swap-card {
             border: 1px solid #eee;
             background: white;
-            padding: 15px;
-            margin: 10px 0;
+            padding: 12px;
+            margin: 8px 0;
             border-radius: 6px;
             cursor: pointer;
             transition: 0.2s;
@@ -233,55 +278,26 @@
             align-items: center;
             gap: 10px;
         }
-        .swap-card:hover {
-            border-color: var(--accent);
-            background-color: #fbfbfb;
-            transform: translateX(5px);
-        }
-        .swap-card.selected {
-            background-color: #e8f4fd;
-            border-color: var(--accent);
-            border-left: 5px solid var(--accent);
+        .swap-card:hover { border-color: var(--accent); background-color: #fbfbfb; }
+        .swap-card.selected { background-color: #e8f4fd; border-color: var(--accent); border-left: 5px solid var(--accent); }
+
+        /* Print Styles */
+        @media print {
+            header, .nav-tabs, .control-panel, .no-print, .admin-toolbar { display: none !important; }
+            .page-section { box-shadow: none; padding: 0; }
+            #printableArea { display: block !important; }
+            table { border: 1px solid black; }
+            th, td { border: 1px solid black; color: black; }
+            th { background-color: #ddd !important; color: black !important; }
         }
 
-        /* --- MOBILE MEDIA QUERIES --- */
+        /* Mobile */
         @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                text-align: center;
-                gap: 10px;
-            }
-            
-            .header-title h1 {
-                font-size: 1.2rem;
-                margin: 10px 0;
-            }
-            
-            .logo {
-                height: 60px; /* Smaller logos on mobile */
-            }
-
-            .nav-tabs {
-                gap: 5px;
-            }
-
-            .nav-btn {
-                padding: 10px 15px;
-                font-size: 0.85rem;
-                flex: 1 1 45%; /* Buttons take up half width roughly */
-            }
-
-            .page-section {
-                padding: 15px;
-            }
-
-            table {
-                font-size: 0.85rem;
-            }
-            
-            th, td {
-                padding: 8px;
-            }
+            .header-content { flex-direction: column; text-align: center; }
+            .logo { height: 50px; }
+            .header-title h1 { font-size: 1.2rem; margin: 10px 0; }
+            .admin-toolbar { flex-direction: column; align-items: flex-start; }
+            .nav-btn { flex: 1 1 45%; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -290,34 +306,64 @@
 <header>
     <div class="header-content">
         <img src="images/cse.jpg" alt="CSE Logo" class="logo">
-        
         <div class="header-title">
             <h1>Department of Computer Science & Engineering</h1>
-            <h2>Internal Assessment Duty Allocation</h2>
+            <h2>Exam Duty Allocation Portal (Admin)</h2>
         </div>
-        
         <img src="images/vvce.png" alt="VVCE Logo" class="logo">
     </div>
 </header>
 
 <div class="container">
     <div class="nav-tabs">
-        <button class="nav-btn active" onclick="switchTab('allocation')">📅 Master Schedule</button>
-        <button class="nav-btn" onclick="switchTab('faculty')">👤 My Duties</button>
-        <button class="nav-btn" onclick="switchTab('swap')">🔄 Request Swap</button>
+        <button class="nav-btn active" onclick="switchTab('admin')">📅 Allocation Master</button>
+        <button class="nav-btn" onclick="switchTab('history')">📜 Request Log</button>
+        <button class="nav-btn" onclick="switchTab('faculty')">👤 Faculty View</button>
+        <button class="nav-btn" onclick="switchTab('swap')">🔄 Submit Request</button>
+        <button class="nav-btn" onclick="switchTab('room')">🏫 Room Mgmt</button>
+        <button class="nav-btn" onclick="switchTab('report')">🖨️ Reports</button>
     </div>
 
-    <div id="allocation-page" class="page-section active-section">
-        <h2 class="section-title">Master Duty Allocation</h2>
-        <p style="color:#666; font-size: 0.9em; margin-bottom: 15px;">
-            <span style="display:inline-block; width:12px; height:12px; background:var(--success); margin-right:5px; border-radius:2px;"></span> Assigned
-            <span style="display:inline-block; width:12px; height:12px; background:hsl(0, 70%, 85%); margin-left:10px; margin-right:5px; border-radius:2px;"></span> Swapped (Pending/Done)
-        </p>
+    <div id="admin-page" class="page-section active-section">
+        <h2 class="section-title">
+            Duty Allocation Master
+            <span id="unsavedMsg" style="font-size:0.7em; color:var(--danger); display:none;">⚠️ Unsaved Changes</span>
+        </h2>
+        
+        <div class="admin-toolbar">
+            <label class="toggle-switch">
+                <input type="checkbox" id="swapModeCheck">
+                <span class="slider"></span>
+                <span class="toggle-text">Enable Manual Swap Mode (Colors)</span>
+            </label>
+            
+            <button class="btn btn-success" onclick="saveAllocationChanges()">💾 Save Changes</button>
+        </div>
         
         <div class="table-wrapper">
             <table id="allocationTable">
                 <thead></thead>
                 <tbody id="tableBody"></tbody>
+                <tfoot id="tableFooter" style="background:#eee; font-weight:bold;"></tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div id="history-page" class="page-section">
+        <h2 class="section-title">Swap Request Log</h2>
+        <p style="color:#666;">Review pending requests here, then go to the "Allocation Master" tab to apply changes manually.</p>
+        <div class="table-wrapper">
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Requestor</th>
+                        <th>Requested Slot</th>
+                        <th>Target Faculty</th>
+                        <th>Target Slot</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
             </table>
         </div>
     </div>
@@ -325,9 +371,8 @@
     <div id="faculty-page" class="page-section">
         <h2 class="section-title">Individual Schedule</h2>
         <div class="control-panel">
-            <label style="font-weight:bold; display:block; margin-bottom:8px;">Select Your Name:</label>
             <select id="facultySelect" onchange="renderFacultyDuties()">
-                <option value="">-- Choose Faculty --</option>
+                <option value="">-- Select Faculty --</option>
             </select>
         </div>
         <div id="facultyResult">
@@ -342,29 +387,96 @@
     </div>
 
     <div id="swap-page" class="page-section">
-        <h2 class="section-title">Submit Swap Request</h2>
-        <p style="margin-bottom:20px; color:#555;">Follow the steps below to request a mutual swap. The Admin will review and approve manually.</p>
+        <h2 class="section-title">Submit Swap Request (Admin Entry)</h2>
         
         <div class="control-panel">
-            <h3>1. Requestor (You)</h3>
+            <h3>1. Requestor (Source)</h3>
             <select id="swapSourceSelect" onchange="loadSourceDuties()">
-                <option value="">-- Select Your Name --</option>
+                <option value="">-- Select Requestor --</option>
             </select>
-            <div id="sourceDutiesList" style="margin-top:10px;"></div>
+            <div id="sourceDutiesList"></div>
         </div>
 
-        <div id="swapStep2" class="control-panel" style="display:none; margin-top:15px; border-top: 3px solid var(--accent);">
+        <div id="swapStep2" class="control-panel" style="display:none; border-top: 3px solid var(--accent);">
             <h3>2. Select Target Faculty</h3>
             <select id="swapTargetSelect" onchange="loadTargetDuties()">
-                <option value="">-- Select Target Faculty --</option>
+                <option value="">-- Select Target --</option>
             </select>
         </div>
 
-        <div id="swapStep3" class="control-panel" style="display:none; margin-top:15px; border-top: 3px solid var(--accent);">
+        <div id="swapStep3" class="control-panel" style="display:none; border-top: 3px solid var(--accent);">
             <h3>3. Select Target's Duty to Exchange</h3>
-            <div id="targetDutiesList" style="margin-top:10px;"></div>
+            <div id="targetDutiesList"></div>
             <br>
-            <button class="btn" onclick="submitSwapRequest()">📨 Submit Request to Admin</button>
+            <button class="btn btn-purple" onclick="submitSwapRequest()">📨 Log Request</button>
+        </div>
+    </div>
+
+    <div id="room-page" class="page-section">
+        <h2 class="section-title">Room Management</h2>
+        
+        <div class="control-panel">
+            <h3>A. Define Rooms</h3>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                <select id="roomDateSelect"></select>
+                <select id="roomSessionSelect">
+                    <option value="0">Morning Session (10:30)</option>
+                    <option value="1">Afternoon Session (3:30)</option>
+                </select>
+            </div>
+            <textarea id="roomNumbersInput" placeholder="Enter Room Numbers separated by comma (e.g. 201, 202, 305, LH-1)"></textarea>
+            <button class="btn" onclick="saveRoomConfig()" style="margin-top:10px;">Save Rooms</button>
+        </div>
+
+        <div class="control-panel">
+            <h3>B. Allocate Rooms</h3>
+            <button class="btn btn-danger" onclick="allocateRandomRooms()">🎲 Random Allocation</button>
+        </div>
+
+        <div class="table-wrapper">
+            <h3>Allocation Preview</h3>
+            <table id="roomPreviewTable">
+                <thead><tr><th>Sl</th><th>Faculty Name</th><th>Assigned Room</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="report-page" class="page-section">
+        <div class="control-panel no-print">
+            <h2 class="section-title">Report Generation</h2>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <select id="reportDateSelect"></select>
+                <select id="reportSessionSelect">
+                    <option value="0">Morning Session</option>
+                    <option value="1">Afternoon Session</option>
+                </select>
+            </div>
+            <button class="btn" onclick="generateReport()">Generate List</button>
+            <button class="btn btn-success" onclick="window.print()" style="margin-left:10px;">🖨️ Print PDF</button>
+        </div>
+
+        <div id="printableArea">
+            <div style="text-align:center; margin-bottom:20px;">
+                <h2 style="margin:0; text-transform:uppercase;">Department of Computer Science & Engineering</h2>
+                <h3 style="margin:5px 0; color:black;">Duty Attendance Sheet</h3>
+                <p>
+                    <strong>Date:</strong> <span id="printDate"></span> | 
+                    <strong>Session:</strong> <span id="printSession"></span>
+                </p>
+            </div>
+            <table id="reportTable" style="width:100%; border-collapse:collapse; margin-top:20px;">
+                <thead>
+                    <tr>
+                        <th style="width:50px; text-align:center;">Sl.No</th>
+                        <th>Name of Faculty</th>
+                        <th style="text-align:center;">Session</th>
+                        <th style="text-align:center;">Room No</th>
+                        <th style="width:150px; text-align:center;">Signature</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
 
@@ -372,7 +484,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set, push, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDjNil31v2SXPblWLGPyorEaXioZrRVarA",
@@ -395,32 +507,42 @@
         "PRIYANKA R", "SHILPA B V", "VINEETHA B. Y", "MANASA M R", "DHARMARAJ K B", 
         "SOMASHEKARA A S", "TEJAKSHI N S", "PRIYA H P", "KAVYASHREE G", "SHILPA R", 
         "SHRUTHI P S", "DR. NATESH M", "LIKHITHA B", "VARSHINI V", "DR. RAMANUJA SIMHA", 
-        "RAKSHITHA S", "CHAYA KUMARI H A", "SHRUTHI V P", "HONNIKA K", "MANJUNATHA G B"
+        "RAKSHITHA S", "CHAYA KUMARI H A", "SHRUTHI V P", "HONNIKA K", "MANJUNATHA G B","G SIREESHA","DAYANANDA K J","DR. ANAND","DR. DIVYA RASHMI S V","DR. SHIVASHANKAR C","DR. SHWETHA H T","DR. RAHUL MUNAVALLI","DR. PRASAD M R","DR. VIDYASHREE K P","DR.SHRADDHA C","SUSAN SHAJU","DR. SHWETHA G K"
+
     ];
 
     const scheduleStructure = [
         { date: "02-01-2026", slots: ["10:30-11:45AM", "3:30-4:45PM"] },
         { date: "05-01-2026", slots: ["10:30-11:45AM", "3:30-4:45PM"] },
-        { date: "06-01-2026", slots: ["10:30-11:45AM", "3:30-4:45PM"] },
-        { date: "07-01-2026", slots: ["10:30-11:45AM"] }
+        { date: "06-01-2026", slots: ["10:30-11:45AM", "3:30-4:45PM"] }
+        
     ];
 
     let dbData = {}; 
+    let localData = {}; 
+    let hasUnsavedChanges = false;
+    let roomConfigData = {}; 
+    let roomAllocations = {}; 
     let swapState = { sourceFIndex: null, sourceKey: null, targetFIndex: null, targetKey: null };
 
     // --- HELPERS ---
     const getCellKey = (f, d, s) => `f${f}_d${d}_s${s}`;
+    const getRoomKey = (d, s) => `date${d}_slot${s}`; 
+    const getSessionName = (slotIndex) => slotIndex == 0 ? "Morning" : "Afternoon";
+    function getUniqueSwapColor() { const hue = Math.floor(Math.random() * 360); return `hsl(${hue}, 70%, 85%)`; }
 
-    // --- 1. RENDER READ-ONLY ALLOCATION ---
-    function renderReadOnlyTable() {
+    // --- 1. ADMIN TABLE ---
+    function renderAdminTable() {
         const thead = document.querySelector('#allocationTable thead');
         const tbody = document.getElementById('tableBody');
+        const tfoot = document.getElementById('tableFooter');
 
         // Header
         let dateRow = '<tr><th rowspan="2" style="z-index:100; left:0;">Faculty Name</th>';
         let timeRow = '<tr>';
         scheduleStructure.forEach(item => {
-            dateRow += `<th colspan="${item.slots.length}" style="text-align: center;">${item.date}</th>`;
+            // Centering Date Header
+            dateRow += `<th colspan="${item.slots.length}" style="text-align:center;">${item.date}</th>`;
             item.slots.forEach(slot => timeRow += `<th>${slot}</th>`);
         });
         thead.innerHTML = dateRow + '</tr>' + timeRow + '</tr>';
@@ -428,12 +550,13 @@
         // Body
         tbody.innerHTML = '';
         facultyList.forEach((faculty, fIndex) => {
-            let tr = `<tr><td style="position:sticky; left:0; background:white; font-weight:bold; color:var(--secondary);">${faculty}</td>`;
+            let tr = `<tr><td style="position:sticky; left:0; background:white; font-weight:bold; border-right:2px solid #ddd;">${faculty}</td>`;
             scheduleStructure.forEach((dateItem, dIndex) => {
                 dateItem.slots.forEach((slot, sIndex) => {
                     const key = getCellKey(fIndex, dIndex, sIndex);
                     
-                    const cellData = dbData[key];
+                    const cellData = localData[key];
+                    const dbVal = dbData[key];
 
                     let cellClass = "status-empty";
                     let cellStyle = "";
@@ -445,48 +568,69 @@
                             cellText = "Assigned";
                         } else if (typeof cellData === 'object' && cellData.status === 'swapped') {
                             cellClass = "status-cell";
-                            cellStyle = `background-color: ${cellData.color}; color: black; border-radius:4px;`;
+                            cellStyle = `background-color: ${cellData.color}; color: black;`;
                             cellText = "Swapped";
                         }
                     }
 
-                    tr += `<td class="status-cell ${cellClass}" style="${cellStyle}">${cellText}</td>`;
+                    if (JSON.stringify(cellData) !== JSON.stringify(dbVal)) {
+                        cellClass += " unsaved-change";
+                    }
+
+                    tr += `<td class="status-cell ${cellClass}" style="${cellStyle}" 
+                           onclick="window.toggleCell('${key}')">${cellText}</td>`;
                 });
             });
             tbody.innerHTML += tr + '</tr>';
         });
-    }
 
-    // --- 2. FACULTY VIEW ---
-    window.renderFacultyDuties = function() {
-        const fIndex = document.getElementById('facultySelect').value;
-        const tbody = document.querySelector('#facultyDutyTable tbody');
-        tbody.innerHTML = '';
-        if(!fIndex) return;
-
-        document.getElementById('selectedFacultyName').innerText = facultyList[fIndex];
-        let c = 1;
-        let found = false;
-        scheduleStructure.forEach((d, dIndex) => {
-            d.slots.forEach((s, sIndex) => {
-                const cellData = dbData[getCellKey(fIndex, dIndex, sIndex)];
-                if(cellData) {
-                    found = true;
-                    let role = "Invigilator";
-                    if(typeof cellData === 'object' && cellData.status === 'swapped') role += " (Swapped)";
-                    tbody.innerHTML += `<tr>
-                        <td style="text-align:center">${c++}</td>
-                        <td>${d.date}</td>
-                        <td>${s}</td>
-                        <td style="font-weight:bold; color:var(--secondary);">${role}</td>
-                    </tr>`;
-                }
+        // Totals
+        let totalRow = '<tr><td style="text-align:right; padding-right:10px;">Total:</td>';
+        scheduleStructure.forEach((dateItem, dIndex) => {
+            dateItem.slots.forEach((_, sIndex) => {
+                let count = 0;
+                facultyList.forEach((__, fIndex) => {
+                    if (localData[getCellKey(fIndex, dIndex, sIndex)]) count++;
+                });
+                totalRow += `<td style="text-align:center;">${count}</td>`;
             });
         });
-        
-        if(!found) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#999;">No duties assigned yet.</td></tr>`;
+        tfoot.innerHTML = totalRow + '</tr>';
+
+        document.getElementById('unsavedMsg').style.display = hasUnsavedChanges ? 'inline' : 'none';
+    }
+
+    // --- 2. MANUAL ALLOCATION LOGIC ---
+    window.toggleCell = function(key) {
+        const isSwapMode = document.getElementById('swapModeCheck').checked;
+        const current = localData[key];
+
+        if (isSwapMode) {
+            // SWAP MODE
+            if (!current) {
+                localData[key] = { status: 'swapped', color: getUniqueSwapColor() };
+            } else {
+                localData[key] = null;
+            }
+        } else {
+            // NORMAL MODE
+            localData[key] = !current ? true : null;
         }
+        
+        hasUnsavedChanges = true;
+        renderAdminTable();
+    };
+
+    window.saveAllocationChanges = function() {
+        if(!hasUnsavedChanges) { alert("No changes to save."); return; }
+        
+        set(ref(db, 'allocations'), localData)
+            .then(() => {
+                alert("Changes Saved Successfully!");
+                hasUnsavedChanges = false;
+                document.getElementById('unsavedMsg').style.display = 'none';
+            })
+            .catch(e => alert("Save failed: " + e.message));
     };
 
     // --- 3. SWAP REQUEST LOGIC ---
@@ -502,29 +646,23 @@
 
         if(!fIndex) return;
 
-        let found = false;
         scheduleStructure.forEach((dateItem, dIndex) => {
             dateItem.slots.forEach((slot, sIndex) => {
                 const key = getCellKey(fIndex, dIndex, sIndex);
                 if (dbData[key]) {
-                    found = true;
                     const div = document.createElement('div');
                     div.className = 'swap-card';
-                    div.innerHTML = `<span>📅</span> <strong>${dateItem.date}</strong> <span style="color:#666; margin-left:10px;">${slot}</span>`;
+                    div.innerHTML = `<span>📅</span> <strong>${dateItem.date}</strong> <span style="margin-left:auto; color:#777;">${slot}</span>`;
                     div.onclick = () => {
                         document.querySelectorAll('#sourceDutiesList .swap-card').forEach(e => e.classList.remove('selected'));
                         div.classList.add('selected');
                         swapState.sourceKey = { dIndex, sIndex, date: dateItem.date, slot };
                         step2.style.display = 'block';
-                        // Smooth scroll
-                        step2.scrollIntoView({ behavior: 'smooth' });
                     };
                     listDiv.appendChild(div);
                 }
             });
         });
-
-        if(!found) listDiv.innerHTML = '<p style="color:#e67e22;">You have no duties assigned to swap.</p>';
     };
 
     window.loadTargetDuties = function() {
@@ -547,7 +685,7 @@
                     found = true;
                     const div = document.createElement('div');
                     div.className = 'swap-card';
-                    div.innerHTML = `<span>📅</span> <strong>${dateItem.date}</strong> <span style="color:#666; margin-left:10px;">${slot}</span>`;
+                    div.innerHTML = `<span>📅</span> <strong>${dateItem.date}</strong> <span style="margin-left:auto; color:#777;">${slot}</span>`;
                     div.onclick = () => {
                         document.querySelectorAll('#targetDutiesList .swap-card').forEach(e => e.classList.remove('selected'));
                         div.classList.add('selected');
@@ -558,16 +696,15 @@
             });
         });
 
-        if(!found) listDiv.innerHTML = '<p style="color:#e74c3c;">Selected target has no duties to swap.</p>';
-        else step3.scrollIntoView({ behavior: 'smooth' });
+        if(!found) listDiv.innerHTML = '<p style="color:var(--danger)">Target has no duties to swap.</p>';
     };
 
     window.submitSwapRequest = function() {
         const { sourceFIndex, sourceKey, targetFIndex, targetKey } = swapState;
         
         if(!sourceKey || !targetKey) { alert("Please select a duty from both lists."); return; }
-        if (sourceFIndex == targetFIndex) { alert("Error: You cannot swap with yourself."); return; }
-        if (sourceKey.date === targetKey.date && sourceKey.slot === targetKey.slot) { alert("Error: Cannot swap duties in the same time slot."); return; }
+        if (sourceFIndex == targetFIndex) { alert("Error: Source and Target cannot be the same."); return; }
+        if (sourceKey.date === targetKey.date && sourceKey.slot === targetKey.slot) { alert("Error: Same slot swap not allowed."); return; }
 
         const requestData = {
             requestor: facultyList[sourceFIndex],
@@ -579,23 +716,98 @@
 
         push(ref(db, 'swapRequests'), requestData)
             .then(() => {
-                alert("Request Submitted Successfully! Please inform the Exam Coordinator.");
-                window.location.reload();
+                alert("Request Logged Successfully!");
+                document.getElementById('swapSourceSelect').value = "";
+                document.getElementById('sourceDutiesList').innerHTML = "";
+                document.getElementById('swapStep2').style.display = "none";
+                document.getElementById('swapStep3').style.display = "none";
             })
             .catch(e => alert("Error: " + e.message));
     };
 
-    // --- INITIALIZATION ---
+    // --- 4. ROOM & REPORT ---
+    window.saveRoomConfig = function() {
+        const dIndex = document.getElementById('roomDateSelect').value;
+        const sIndex = document.getElementById('roomSessionSelect').value;
+        const rooms = document.getElementById('roomNumbersInput').value;
+        const rKey = getRoomKey(dIndex, sIndex);
+        set(ref(db, `roomConfig/${rKey}`), rooms).then(() => alert("Rooms Saved!"));
+    };
+
+    window.allocateRandomRooms = function() {
+        const dIndex = document.getElementById('roomDateSelect').value;
+        const sIndex = document.getElementById('roomSessionSelect').value;
+        const rKey = getRoomKey(dIndex, sIndex);
+        const roomsStr = roomConfigData[rKey];
+        if(!roomsStr) { alert("No rooms defined for this slot."); return; }
+        
+        let rooms = roomsStr.split(',').map(r => r.trim()).filter(r => r !== "");
+        rooms.sort(() => Math.random() - 0.5);
+
+        let assignedFacultyIndices = [];
+        facultyList.forEach((_, fIndex) => {
+            if(dbData[getCellKey(fIndex, dIndex, sIndex)]) assignedFacultyIndices.push(fIndex);
+        });
+
+        const updates = {};
+        let previewHtml = '';
+        assignedFacultyIndices.forEach((fIndex, i) => {
+            const room = rooms[i % rooms.length]; 
+            updates[`roomAllocations/${rKey}/${fIndex}`] = room;
+            previewHtml += `<tr><td>${i+1}</td><td>${facultyList[fIndex]}</td><td><strong>${room}</strong></td></tr>`;
+        });
+
+        if(Object.keys(updates).length > 0) {
+            update(ref(db), updates).then(() => {
+                document.querySelector('#roomPreviewTable tbody').innerHTML = previewHtml;
+                alert(`Allocated rooms for ${assignedFacultyIndices.length} faculty.`);
+            });
+        } else alert("No faculty assigned to this slot yet.");
+    };
+
+    window.generateReport = function() {
+        const dIndex = document.getElementById('reportDateSelect').value;
+        const sIndex = document.getElementById('reportSessionSelect').value;
+        const tbody = document.querySelector('#reportTable tbody');
+        
+        document.getElementById('printDate').innerText = scheduleStructure[dIndex].date;
+        document.getElementById('printSession').innerText = getSessionName(sIndex);
+
+        tbody.innerHTML = '';
+        let sl = 1;
+        const rKey = getRoomKey(dIndex, sIndex);
+        const currentRooms = roomAllocations[rKey] || {};
+
+        facultyList.forEach((name, fIndex) => {
+            if(dbData[getCellKey(fIndex, dIndex, sIndex)]) {
+                const room = currentRooms[fIndex] || "Not Allocated";
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="text-align:center;">${sl++}</td>
+                        <td>${name}</td>
+                        <td style="text-align:center; font-weight:bold;">${room}</td>
+                        <td></td>
+                    </tr>`;
+            }
+        });
+        if(sl === 1) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">No duties found.</td></tr>';
+    };
+
+    // --- INIT ---
     function initDropdowns() {
         const fSelects = [document.getElementById('facultySelect'), document.getElementById('swapSourceSelect'), document.getElementById('swapTargetSelect')];
         fSelects.forEach(sel => {
-            const defaultOpt = sel.querySelector('option');
-            sel.innerHTML = '';
-            sel.appendChild(defaultOpt);
-            
+            sel.innerHTML = '<option value="">-- Select Faculty --</option>';
             facultyList.forEach((n, i) => {
                 const opt = document.createElement('option');
                 opt.value = i; opt.innerText = n; sel.appendChild(opt);
+            });
+        });
+        const dSelects = [document.getElementById('roomDateSelect'), document.getElementById('reportDateSelect')];
+        dSelects.forEach(sel => {
+            scheduleStructure.forEach((item, i) => {
+                const opt = document.createElement('option');
+                opt.value = i; opt.innerText = item.date; sel.appendChild(opt);
             });
         });
     }
@@ -604,22 +816,67 @@
         document.querySelectorAll('.page-section').forEach(e => e.classList.remove('active-section'));
         document.getElementById(tab + '-page').classList.add('active-section');
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        
-        const map = {'allocation':0, 'faculty':1, 'swap':2};
+        const map = {'admin':0, 'history':1, 'faculty':2, 'swap':3, 'room':4, 'report':5};
         if(document.querySelectorAll('.nav-btn')[map[tab]]) {
             document.querySelectorAll('.nav-btn')[map[tab]].classList.add('active');
         }
     };
 
+    window.renderFacultyDuties = function() {
+        const fIndex = document.getElementById('facultySelect').value;
+        const tbody = document.querySelector('#facultyDutyTable tbody');
+        tbody.innerHTML = '';
+        if(!fIndex) return;
+
+        document.getElementById('selectedFacultyName').innerText = facultyList[fIndex];
+        let c = 1;
+        scheduleStructure.forEach((d, dIndex) => {
+            d.slots.forEach((s, sIndex) => {
+                const cellData = dbData[getCellKey(fIndex, dIndex, sIndex)];
+                if(cellData) {
+                    let role = "Invigilator";
+                    if(typeof cellData === 'object' && cellData.status === 'swapped') role += " (Swapped)";
+                    tbody.innerHTML += `<tr><td>${c++}</td><td>${d.date}</td><td>${s}</td><td>${role}</td></tr>`;
+                }
+            });
+        });
+    };
+
     initDropdowns();
     
-    // Listen for Realtime Updates
+    // Listen for Realtime Updates from Firebase
     onValue(ref(db, 'allocations'), snap => {
         dbData = snap.val() || {};
-        renderReadOnlyTable();
-        if(document.getElementById('facultySelect').value) {
-            renderFacultyDuties();
+        if (!hasUnsavedChanges) {
+            localData = JSON.parse(JSON.stringify(dbData)); 
         }
+        renderAdminTable();
+    });
+
+    onValue(ref(db, 'roomConfig'), snap => {
+        roomConfigData = snap.val() || {};
+        const dIndex = document.getElementById('roomDateSelect').value;
+        const sIndex = document.getElementById('roomSessionSelect').value;
+        const saved = roomConfigData[getRoomKey(dIndex, sIndex)];
+        if(saved) document.getElementById('roomNumbersInput').value = saved;
+    });
+
+    onValue(ref(db, 'roomAllocations'), snap => { roomAllocations = snap.val() || {}; });
+    
+    // Read Swap REQUESTS
+    onValue(ref(db, 'swapRequests'), snap => {
+        const tbody = document.querySelector('#historyTable tbody');
+        tbody.innerHTML = '';
+        const data = snap.val();
+        if(data) Object.values(data).reverse().forEach(h => {
+            tbody.innerHTML += `<tr>
+                <td style="color:#888; font-size:0.85em;">${h.timestamp}</td>
+                <td><strong>${h.requestor}</strong></td>
+                <td>${h.reqSlot}</td>
+                <td><strong>${h.target}</strong></td>
+                <td>${h.targetSlot}</td>
+            </tr>`;
+        });
     });
 
 </script>
